@@ -60,69 +60,131 @@ def simulate_coverage():
     
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-
+    
 def run_simulation(env, max_steps):
     """Run the UAV coverage simulation and collect data"""
     obs = env.reset()
     done = False
     step_count = 0
-    
+
     # Data collection
-    trajectory = [env.position]
+    trajectory = [(float(env.position[0]), float(env.position[1]))]
     energy_usage_log = []
     speed_log = []
-    coverage_radius_log = []
-    
+
     try:
         while not done and step_count < max_steps:
-            # Use the algorithm's built-in decision making
             obs, reward, done, info = env.step(None)
-            
+
             # Collect data
-            trajectory.append(env.position)
+            trajectory.append((float(env.position[0]), float(env.position[1])))
+
             if len(env.energy_usage_log) > len(energy_usage_log):
                 energy_usage_log.append({
-                    "step": step_count + 1,
-                    "energyUsed": env.energy_usage_log[-1]
+                    "step": int(step_count + 1),
+                    "energyUsed": float(env.energy_usage_log[-1])
                 })
-            
+
             if len(env.speed_log) > len(speed_log):
                 speed_log.append({
-                    "step": step_count + 1,
-                    "speed": env.speed_log[-1],
-                    "coverageRadius": env.coverage_radius_log[-1]
+                    "step": int(step_count + 1),
+                    "speed": float(env.speed_log[-1]),
+                    "coverageRadius": float(env.coverage_radius_log[-1])
                 })
-            
+
             step_count += 1
-        
-        # Format coverage map for frontend
+
+        # Format coverage map
         coverage_map = []
         for point, radius in env.coverage_map.items():
             coverage_map.append({
-                "point": point,
-                "radius": radius
+                "point": [float(point[0]), float(point[1])],
+                "radius": float(radius)
             })
-        
-        coverage_percentage = env._calculate_coverage_percentage() * 100
-        
-        # Create results object
+
+        coverage_percentage = float(env._calculate_coverage_percentage() * 100)
+
         results = {
             "coveragePercentage": coverage_percentage,
-            "remainingBattery": env.current_battery,
-            "steps": step_count,
+            "remainingBattery": float(env.current_battery),
+            "steps": int(step_count),
             "trajectory": trajectory,
             "energyUsageLog": energy_usage_log,
             "speedLog": speed_log,
             "coverageMap": coverage_map,
-            "success": coverage_percentage >= 99,
-            "completed": done
+            "success": bool(coverage_percentage >= 99),
+            "completed": bool(done)
         }
-        
+
         return results
-        
+
     except Exception as e:
         print(f"Error during simulation: {e}")
         return {"error": str(e)}
+
+
+# def run_simulation(env, max_steps):
+#     """Run the UAV coverage simulation and collect data"""
+#     obs = env.reset()
+#     done = False
+#     step_count = 0
+    
+#     # Data collection
+#     trajectory = [env.position]
+#     energy_usage_log = []
+#     speed_log = []
+#     coverage_radius_log = []
+    
+#     try:
+#         while not done and step_count < max_steps:
+#             # Use the algorithm's built-in decision making
+#             obs, reward, done, info = env.step(None)
+            
+#             # Collect data
+#             trajectory.append(env.position)
+#             if len(env.energy_usage_log) > len(energy_usage_log):
+#                 energy_usage_log.append({
+#                     "step": step_count + 1,
+#                     "energyUsed": env.energy_usage_log[-1]
+#                 })
+            
+#             if len(env.speed_log) > len(speed_log):
+#                 speed_log.append({
+#                     "step": step_count + 1,
+#                     "speed": env.speed_log[-1],
+#                     "coverageRadius": env.coverage_radius_log[-1]
+#                 })
+            
+#             step_count += 1
+        
+#         # Format coverage map for frontend
+#         coverage_map = []
+#         for point, radius in env.coverage_map.items():
+#             coverage_map.append({
+#                 "point": point,
+#                 "radius": radius
+#             })
+        
+#         coverage_percentage = env._calculate_coverage_percentage() * 100
+        
+#         # Create results object
+#         results = {
+#             "coveragePercentage": coverage_percentage,
+#             "remainingBattery": env.current_battery,
+#             "steps": step_count,
+#             "trajectory": trajectory,
+#             "energyUsageLog": energy_usage_log,
+#             "speedLog": speed_log,
+#             "coverageMap": coverage_map,
+#             "success": coverage_percentage >= 99,
+#             "completed": done
+#         }
+        
+#         return results
+        
+#     except Exception as e:
+#         print(f"Error during simulation: {e}")
+#         return {"error": str(e)}
         
 # Add this to your main Flask app like this:
 '''

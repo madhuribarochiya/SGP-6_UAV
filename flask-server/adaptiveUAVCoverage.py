@@ -13,9 +13,18 @@ class AdaptiveUAVCoverageEnv(gym.Env):
         super(AdaptiveUAVCoverageEnv, self).__init__()
         print("Initializing Adaptive UAV Environment...")
 
+
+        coordinates = coverage_area.get("coordinates", [])
+        self.coverage_area = Polygon([(lon, lat) for lon, lat in coordinates])
         # Convert coverage area and no-fly zones into polygons
-        self.coverage_area = Polygon([(p["lon"], p["lat"]) for p in coverage_area])
-        self.no_fly_zones = [Polygon([(p["lon"], p["lat"]) for p in zone]) for zone in no_fly_zones]
+        ## self.coverage_area = Polygon([(p["lon"], p["lat"]) for p in coverage_area])
+        # self.coverage_area = Polygon([(p[0], p[1]) for p in coverage_area])
+        ## self.no_fly_zones = [Polygon([(p["lon"], p["lat"]) for p in zone]) for zone in no_fly_zones]
+        # self.no_fly_zones = [Polygon([(p[0], p[1]) for p in zone]) for zone in no_fly_zones]
+        self.no_fly_zones = [
+            Polygon([(lon, lat) for lon, lat in zone])
+            for zone in no_fly_zones
+        ]
 
         # Wind data
         self.wind_data = wind_data
